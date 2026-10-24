@@ -75,6 +75,9 @@
   ul.vids li:last-child{border-bottom:0}
   ul.vids li .m{margin-left:auto; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
   ul.vids li .tag{font-size:11px; color:var(--warn); background:var(--warn-bg); border-radius:5px; padding:1px 6px; height:fit-content}
+  ul.vids li a{display:flex; gap:10px; width:100%; color:inherit; text-decoration:none; align-items:baseline}
+  ul.vids li a:hover span:first-child{color:var(--accent); text-decoration:underline}
+  ul.vids li a .m{margin-left:auto; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
 
   ol.points{margin:0; padding-left:20px; font-size:14.5px}
   ol.points li{margin:0 0 7px}
@@ -110,18 +113,35 @@
 
   /* 有聲書 */
   .ttsbar{
-    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
-    background:var(--card); border:1px solid var(--line); border-radius:12px;
-    padding:11px 14px; margin:0 0 18px
+    background:var(--card); border:2px solid var(--accent); border-radius:14px;
+    padding:16px 18px; margin:0 0 20px
   }
+  .ttsbar .tts-title{
+    display:flex; align-items:center; gap:10px; font-size:17px; font-weight:700;
+    margin:0 0 12px; color:var(--ink)
+  }
+  .ttsbar .tts-title span{font-size:13px; font-weight:400; color:var(--ink2)}
+  .ttsbar .tts-row{display:flex; flex-wrap:wrap; align-items:center; gap:10px}
   .ttsbar select{
-    font:inherit; font-size:13px; padding:4px 8px; border:1px solid var(--line);
-    border-radius:8px; background:var(--card); color:var(--ink)
+    font:inherit; font-size:15px; padding:9px 10px; border:1px solid var(--line);
+    border-radius:9px; background:var(--card); color:var(--ink)
   }
-  .ttsbar label{font-size:13px; color:var(--ink2); display:flex; align-items:center; gap:6px}
+  .ttsbar label{font-size:14px; color:var(--ink2); display:flex; align-items:center; gap:7px}
+  .btn-lg{
+    font-size:16px; font-weight:600; padding:12px 20px; min-height:48px;
+    border-radius:11px; border:2px solid var(--accent); color:var(--accent);
+    background:var(--card); display:inline-flex; align-items:center; gap:8px;
+    text-decoration:none; line-height:1.2
+  }
+  .btn-lg:hover{background:var(--accent-soft); color:var(--accent)}
+  .btn-lg.primary{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .btn-lg.primary:hover{background:#1a5f4f; color:#fff}
+  .btn-lg.playing{background:var(--accent-soft); color:var(--accent); border-style:dashed}
+  .act{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
+  .act .btn-lg{font-size:15px; padding:11px 16px; min-height:46px}
   .btn.playing{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
-  .tts-note{font-size:12.5px; color:var(--ink2)}
-  #tts-status{font-variant-numeric:tabular-nums}
+  .tts-note{font-size:13px; color:var(--ink2); line-height:1.6}
+  #tts-status{font-variant-numeric:tabular-nums; font-weight:600; color:var(--accent)}
   #upd{font-size:13px; color:var(--ink2); margin:-6px 0 18px}
 
   @media (max-width:640px){
@@ -165,20 +185,23 @@
   <div id="upd" hidden></div>
 
   <div class="ttsbar" id="ttsbar">
-    <button class="btn" id="tts-play">朗讀全站教學</button>
-    <button class="btn" id="tts-stop">停止</button>
-    <label>語速
-      <select id="tts-rate">
-        <option value="0.8">0.8×</option>
-        <option value="1" selected>1×</option>
-        <option value="1.2">1.2×</option>
-        <option value="1.5">1.5×</option>
-      </select>
-    </label>
-    <label>聲音
-      <select id="tts-voice"><option value="">系統預設</option></select>
-    </label>
-    <span class="tts-note" id="tts-status">有聲書用瀏覽器內建語音（免費、無需上網）。音質取決於系統有無廣東話聲音。</span>
+    <div class="tts-title">有聲書（廣東話）<span>唔會自動出聲，要你按「開始朗讀」先播</span></div>
+    <div class="tts-row">
+      <button class="btn-lg primary" id="tts-play">開始朗讀全站</button>
+      <button class="btn-lg" id="tts-stop">停止</button>
+      <label>語速
+        <select id="tts-rate">
+          <option value="0.8">0.8×（慢）</option>
+          <option value="0.9">0.9×</option>
+          <option value="1" selected>1×（正常）</option>
+          <option value="1.2">1.2×（快）</option>
+        </select>
+      </label>
+      <label>聲音
+        <select id="tts-voice"><option value="">自動（廣東話優先）</option></select>
+      </label>
+    </div>
+    <div class="tts-note" id="tts-status">未開始。按上面「開始朗讀全站」，或者每章嘅「朗讀呢一章」。</div>
   </div>
 
   <div id="mods"></div>
@@ -195,7 +218,7 @@
 <script>
 (function(){
   /* 建置版本：同 version.json 比對，用嚟偵測有無更新 */
-  var BUILD = "2026-10-24.1";
+  var BUILD = "2026-10-24.2";
   var C = window.COURSE;
   var KEY = C.id + ".progress";
 
@@ -234,8 +257,10 @@
 
   /* ---------- modules ---------- */
   function modHTML(m){
+    var modUrl = C.url + "/home/module/" + m.n;
     var vids = m.videos.map(function(v){
-      return "<li><span>"+v.t+"</span><span class='m'>"+v.m+" 分鐘</span></li>";
+      return "<li><a href='"+modUrl+"' target='_blank' rel='noopener' title='喺 Coursera 開 M"+m.n+"'>"+
+             "<span>"+v.t+"</span><span class='m'>"+v.m+" 分鐘</span></a></li>";
     }).join("");
 
     var reads = (m.readings||[]).map(function(r){
@@ -278,6 +303,8 @@
         "<div class='time'>"+m.time+"</div>"+
         "<label class='donebox'><input type='checkbox' data-done='"+m.n+"' "+(done.has(m.n)?"checked":"")+"> 已完成</label>"+
       "</div>"+
+      "<div class='act'><button class='btn-lg chap-btn' data-chap='"+m.n+"' type='button'>朗讀呢一章</button>"+
+        "<a class='btn-lg' href='"+modUrl+"' target='_blank' rel='noopener'>去 Coursera 睇 M"+m.n+" 影片</a></div>"+
       "<h3 class='sec'>影片（"+m.videos.length+" 段 · 各片相加 "+vtotal+" 分鐘）</h3><ul class='vids'>"+vids+"</ul>"+
       (reads ? "<h3 class='sec'>閱讀</h3><ul class='vids'>"+reads+"</ul>" : "")+
       asg+
@@ -351,7 +378,7 @@
       .catch(function(){ /* 離線或檔案缺失：靜靜跳過 */ });
   })();
 
-  /* ---------- 有聲書（Web Speech API，純前端免費） ---------- */
+  /* ---------- 有聲書（Web Speech API，純前端免費，廣東話優先） ---------- */
   (function tts(){
     var playBtn = document.getElementById("tts-play");
     var stopBtn = document.getElementById("tts-stop");
@@ -365,85 +392,142 @@
     }
 
     var synth = window.speechSynthesis;
-    var chunks = [];
-    var idx = 0;
+    var queue = [];        /* 待讀章節 [{n, text}] */
+    var qpos = 0;
     var speaking = false;
+    var current = null;    /* 而家讀緊邊一章 */
 
-    function buildChunks(){
-      chunks = [];
-      C.modules.forEach(function(m){
-        var L = (window.LESSONS || {})[m.n];
-        var buf = [];
-        buf.push("Module " + m.n + "。" + m.title + "。" + m.zh + "。");
-        if(L){
-          buf.push(L.lead);
-          L.sections.forEach(function(s){
-            buf.push(s.h + "。");
-            s.p.forEach(function(x){ buf.push(x); });
-          });
-        }
-        chunks.push({ n: m.n, text: buf.join(" ") });
-      });
+    /* 一章一段文字；唔會自動播，一定要用戶按 */
+    function chapterText(m){
+      var L = (window.LESSONS || {})[m.n];
+      var buf = [];
+      buf.push("第 " + m.n + " 章。" + m.zh + "。" + m.title + "。");
+      if(L){
+        buf.push(L.lead);
+        L.sections.forEach(function(s){
+          buf.push(s.h + "。");
+          s.p.forEach(function(x){ buf.push(x); });
+        });
+      }
+      return buf.join(" ");
     }
 
     function pickVoice(){
       var want = voiceSel && voiceSel.value;
-      if(!want) return null;
       var vs = synth.getVoices();
-      for(var i=0;i<vs.length;i++){ if(vs[i].voiceURI === want || vs[i].name === want) return vs[i]; }
-      return null;
+      if(want){
+        for(var i=0;i<vs.length;i++){ if(vs[i].voiceURI === want || vs[i].name === want) return vs[i]; }
+      }
+      /* 自動：廣東話 > 任何中文 > null（瀏覽器預設） */
+      var hk = vs.filter(function(v){ return /^(yue|zh[-_]HK|zh[-_]MO)/i.test(v.lang) || /粵|廣東|Cantonese|Sin-?ji|善怡/i.test(v.name); });
+      if(hk.length) return hk[0];
+      var zh = vs.filter(function(v){ return /^zh/i.test(v.lang); });
+      return zh.length ? zh[0] : null;
     }
 
     function fillVoices(){
       var vs = synth.getVoices();
       if(!vs.length) return;
-      var zh = vs.filter(function(v){ return /^(zh|yue)/i.test(v.lang); });
-      var list = zh.length ? zh : vs;
-      voiceSel.innerHTML = "<option value=''>系統預設</option>" + list.map(function(v){
+      function isCant(v){ return /^(yue|zh[-_]HK|zh[-_]MO)/i.test(v.lang) || /粵|廣東|Cantonese|Sin-?ji|善怡/i.test(v.name); }
+      var cant = vs.filter(isCant);
+      var other = vs.filter(function(v){ return !isCant(v) && /^zh/i.test(v.lang); });
+      var rest = vs.filter(function(v){ return !isCant(v) && !/^zh/i.test(v.lang); });
+
+      function opts(arr){ return arr.map(function(v){
         return "<option value=\""+v.voiceURI+"\">"+v.name+"（"+v.lang+"）</option>";
-      }).join("");
-      var hk = list.filter(function(v){ return /zh[-_]HK|yue/i.test(v.lang) || /粵|廣東|Cantonese|Sin-?ji/i.test(v.name); })[0];
-      if(hk) voiceSel.value = hk.voiceURI;
+      }).join(""); }
+
+      voiceSel.innerHTML =
+        "<option value=''>自動（廣東話優先）</option>" +
+        (cant.length ? "<optgroup label='廣東話'>"+opts(cant)+"</optgroup>" : "") +
+        (other.length ? "<optgroup label='其他中文'>"+opts(other)+"</optgroup>" : "") +
+        (rest.length ? "<optgroup label='其他語言'>"+opts(rest)+"</optgroup>" : "");
+
+      if(!cant.length){
+        status.textContent = "注意：呢部機／呢個瀏覽器冇安裝廣東話語音，會用其他中文聲音讀。";
+      }
     }
     fillVoices();
     if(typeof synth.onvoiceschanged !== "undefined"){
       synth.onvoiceschanged = fillVoices;
     }
 
-    function say(){
-      if(idx >= chunks.length){ stop(); status.textContent = "朗讀完畢。"; return; }
-      var c = chunks[idx];
+    function label(txt){
+      playBtn.textContent = txt;
+    }
+
+    function reset(ui){
+      speaking = false;
+      current = null;
+      queue = []; qpos = 0;
+      playBtn.classList.remove("playing");
+      label("開始朗讀全站");
+      document.querySelectorAll(".chap-btn.playing").forEach(function(b){
+        b.classList.remove("playing");
+        b.textContent = "朗讀呢一章";
+      });
+      synth.cancel();
+      if(ui) status.textContent = ui;
+    }
+
+    function speakNext(){
+      if(qpos >= queue.length){ reset("朗讀完畢。"); return; }
+      var c = queue[qpos];
+      current = c.n;
       var u = new SpeechSynthesisUtterance(c.text);
       u.lang = "zh-HK";
       u.rate = parseFloat(rateSel.value) || 1;
+      u.pitch = 1;
       var v = pickVoice();
       if(v){ u.voice = v; u.lang = v.lang; }
-      u.onend = function(){ idx++; say(); };
-      u.onerror = function(){ idx++; say(); };
-      status.textContent = "朗讀中：M" + c.n + "（" + (idx+1) + " / " + chunks.length + "）";
+      u.onend = function(){ qpos++; speakNext(); };
+      u.onerror = function(){ qpos++; speakNext(); };
+      status.textContent = "朗讀中：" + c.short + "（" + (qpos+1) + " / " + queue.length + "）";
       synth.speak(u);
     }
 
-    function stop(){
-      speaking = false;
-      playBtn.classList.remove("playing");
-      playBtn.textContent = "朗讀全站教學";
+    function start(list){
+      if(!list.length) return;
       synth.cancel();
+      queue = list; qpos = 0; speaking = true;
+      playBtn.classList.add("playing");
+      label("暫停朗讀");
+      speakNext();
     }
 
     playBtn.addEventListener("click", function(){
-      if(speaking){ stop(); status.textContent = "已停止。"; return; }
-      if(!chunks.length) buildChunks();
-      if(!chunks.length) return;
-      synth.cancel();
-      idx = 0; speaking = true;
-      playBtn.classList.add("playing");
-      playBtn.textContent = "暫停朗讀";
-      say();
+      if(speaking){ reset("已停止。"); return; }
+      var all = C.modules.map(function(m){
+        return { n:m.n, short:"第 "+m.n+" 章 "+m.zh, text: chapterText(m) };
+      });
+      start(all);
     });
-    stopBtn.addEventListener("click", function(){ stop(); status.textContent = "已停止。"; });
+
+    stopBtn.addEventListener("click", function(){ reset("已停止。"); });
+
     rateSel.addEventListener("change", function(){
-      if(speaking){ stop(); status.textContent = "語速已改，再按「朗讀全站教學」由頭開始。"; }
+      if(speaking) reset("語速已改為 " + rateSel.value + "×，再按「開始朗讀全站」由頭開始。");
+    });
+    voiceSel.addEventListener("change", function(){
+      if(speaking) reset("聲音已改，再按「開始朗讀全站」由頭開始。");
+    });
+
+    /* 每章一個大按鈕：由呢一章開始讀落去 */
+    document.getElementById("mods").addEventListener("click", function(e){
+      var b = e.target.closest ? e.target.closest(".chap-btn") : null;
+      if(!b) return;
+      var n = parseInt(b.getAttribute("data-chap"), 10);
+      if(speaking && current === n){ reset("已停止。"); return; }
+      var list = C.modules.filter(function(m){ return m.n >= n; }).map(function(m){
+        return { n:m.n, short:"第 "+m.n+" 章 "+m.zh, text: chapterText(m) };
+      });
+      document.querySelectorAll(".chap-btn").forEach(function(x){
+        x.classList.remove("playing");
+        x.textContent = "朗讀呢一章";
+      });
+      b.classList.add("playing");
+      b.textContent = "朗讀中…（再按停止）";
+      start(list);
     });
   })();
 })();
