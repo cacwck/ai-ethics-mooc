@@ -99,6 +99,31 @@
     color:var(--ink2); border-radius:8px; padding:5px 11px; cursor:pointer
   }
   .btn:hover{border-color:var(--accent); color:var(--accent)}
+  /* 詳細教學（自製筆記） */
+  .lesson{border-top:1px solid var(--line); margin:20px 0 0; padding-top:2px}
+  .lesson .lead{
+    font-size:14.5px; color:#33332f; background:#f6faf8; border-left:3px solid var(--accent);
+    padding:9px 12px; border-radius:0 8px 8px 0; margin:10px 0 14px
+  }
+  .lesson h4{font-size:15px; margin:18px 0 6px; color:var(--ink)}
+  .lesson p{margin:0 0 9px; font-size:14.5px; color:#33332f}
+
+  /* 有聲書 */
+  .ttsbar{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:11px 14px; margin:0 0 18px
+  }
+  .ttsbar select{
+    font:inherit; font-size:13px; padding:4px 8px; border:1px solid var(--line);
+    border-radius:8px; background:var(--card); color:var(--ink)
+  }
+  .ttsbar label{font-size:13px; color:var(--ink2); display:flex; align-items:center; gap:6px}
+  .btn.playing{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+  .tts-note{font-size:12.5px; color:var(--ink2)}
+  #tts-status{font-variant-numeric:tabular-nums}
+  #upd{font-size:13px; color:var(--ink2); margin:-6px 0 18px}
+
   @media (max-width:640px){
     .meta dl{grid-template-columns:1fr}
     .meta dt{margin-top:8px}
@@ -137,6 +162,25 @@
     睇片、交作業、考試一律返 Coursera 做，呢個站只用嚟編排進度同複習。
   </div>
 
+  <div id="upd" hidden></div>
+
+  <div class="ttsbar" id="ttsbar">
+    <button class="btn" id="tts-play">朗讀全站教學</button>
+    <button class="btn" id="tts-stop">停止</button>
+    <label>語速
+      <select id="tts-rate">
+        <option value="0.8">0.8×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.2">1.2×</option>
+        <option value="1.5">1.5×</option>
+      </select>
+    </label>
+    <label>聲音
+      <select id="tts-voice"><option value="">系統預設</option></select>
+    </label>
+    <span class="tts-note" id="tts-status">有聲書用瀏覽器內建語音（免費、無需上網）。音質取決於系統有無廣東話聲音。</span>
+  </div>
+
   <div id="mods"></div>
 
   <footer>
@@ -147,8 +191,11 @@
 </main>
 
 <script src="data.js"></script>
+<script src="lessons.js"></script>
 <script>
 (function(){
+  /* 建置版本：同 version.json 比對，用嚟偵測有無更新 */
+  var BUILD = "2026-10-24.1";
   var C = window.COURSE;
   var KEY = C.id + ".progress";
 
@@ -210,6 +257,17 @@
 
     var vtotal = m.videos.reduce(function(s,v){ return s+v.m; },0);
 
+    var L = (window.LESSONS || {})[m.n];
+    var lesson = L
+      ? "<div class='lesson' data-lesson='"+m.n+"'>"+
+          "<h3 class='sec'>詳細教學（自製筆記）</h3>"+
+          "<div class='lead'>"+L.lead+"</div>"+
+          L.sections.map(function(s){
+            return "<h4>"+s.h+"</h4>"+s.p.map(function(x){ return "<p>"+x+"</p>"; }).join("");
+          }).join("")+
+        "</div>"
+      : "";
+
     return "<section class='mod' id='m"+m.n+"' data-n='"+m.n+"'>"+
       "<div class='modhead'>"+
         "<div class='num'>"+m.n+"</div>"+
@@ -223,6 +281,7 @@
       "<h3 class='sec'>影片（"+m.videos.length+" 段 · 各片相加 "+vtotal+" 分鐘）</h3><ul class='vids'>"+vids+"</ul>"+
       (reads ? "<h3 class='sec'>閱讀</h3><ul class='vids'>"+reads+"</ul>" : "")+
       asg+
+      lesson+
       (pts ? "<h3 class='sec'>學習重點（自製筆記）</h3><ol class='points'>"+pts+"</ol>" : "")+
       (qa ? "<h3 class='sec'>自測（點開睇參考答案）</h3>"+qa : "")+
       (terms ? "<h3 class='sec'>詞彙（自製）</h3><dl class='terms'>"+terms+"</dl>" : "")+
@@ -269,6 +328,124 @@
     if(!confirm("清除全部 10 個 module 嘅完成標記？")) return;
     done = new Set(); saveDone(done); renderProgress();
   });
+
+  /* ---------- 自動更新偵測 ---------- */
+  (function checkUpdate(){
+    var box = document.getElementById("upd");
+    if(!box || !window.fetch) return;
+    fetch("version.json?t=" + Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if(!j || !j.build) return;
+        if(j.build !== BUILD){
+          box.hidden = false;
+          box.innerHTML = "<div class='note' style='margin:0 0 18px'>"+
+            "<b>有新版本</b>：網站已更新到 <code>"+j.build+"</code>（你而家睇緊 <code>"+BUILD+"</code>）。"+
+            " <a href='#' id='upd-reload'>重新載入</a>"+
+            (j.note ? "<br><span style='font-size:13px'>"+j.note+"</span>" : "")+
+            "</div>";
+          var a = document.getElementById("upd-reload");
+          if(a) a.addEventListener("click", function(e){ e.preventDefault(); location.reload(); });
+        }
+      })
+      .catch(function(){ /* 離線或檔案缺失：靜靜跳過 */ });
+  })();
+
+  /* ---------- 有聲書（Web Speech API，純前端免費） ---------- */
+  (function tts(){
+    var playBtn = document.getElementById("tts-play");
+    var stopBtn = document.getElementById("tts-stop");
+    var rateSel = document.getElementById("tts-rate");
+    var voiceSel = document.getElementById("tts-voice");
+    var status = document.getElementById("tts-status");
+    if(!playBtn || !("speechSynthesis" in window)){
+      var bar = document.getElementById("ttsbar");
+      if(bar) bar.style.display = "none";
+      return;
+    }
+
+    var synth = window.speechSynthesis;
+    var chunks = [];
+    var idx = 0;
+    var speaking = false;
+
+    function buildChunks(){
+      chunks = [];
+      C.modules.forEach(function(m){
+        var L = (window.LESSONS || {})[m.n];
+        var buf = [];
+        buf.push("Module " + m.n + "。" + m.title + "。" + m.zh + "。");
+        if(L){
+          buf.push(L.lead);
+          L.sections.forEach(function(s){
+            buf.push(s.h + "。");
+            s.p.forEach(function(x){ buf.push(x); });
+          });
+        }
+        chunks.push({ n: m.n, text: buf.join(" ") });
+      });
+    }
+
+    function pickVoice(){
+      var want = voiceSel && voiceSel.value;
+      if(!want) return null;
+      var vs = synth.getVoices();
+      for(var i=0;i<vs.length;i++){ if(vs[i].voiceURI === want || vs[i].name === want) return vs[i]; }
+      return null;
+    }
+
+    function fillVoices(){
+      var vs = synth.getVoices();
+      if(!vs.length) return;
+      var zh = vs.filter(function(v){ return /^(zh|yue)/i.test(v.lang); });
+      var list = zh.length ? zh : vs;
+      voiceSel.innerHTML = "<option value=''>系統預設</option>" + list.map(function(v){
+        return "<option value=\""+v.voiceURI+"\">"+v.name+"（"+v.lang+"）</option>";
+      }).join("");
+      var hk = list.filter(function(v){ return /zh[-_]HK|yue/i.test(v.lang) || /粵|廣東|Cantonese|Sin-?ji/i.test(v.name); })[0];
+      if(hk) voiceSel.value = hk.voiceURI;
+    }
+    fillVoices();
+    if(typeof synth.onvoiceschanged !== "undefined"){
+      synth.onvoiceschanged = fillVoices;
+    }
+
+    function say(){
+      if(idx >= chunks.length){ stop(); status.textContent = "朗讀完畢。"; return; }
+      var c = chunks[idx];
+      var u = new SpeechSynthesisUtterance(c.text);
+      u.lang = "zh-HK";
+      u.rate = parseFloat(rateSel.value) || 1;
+      var v = pickVoice();
+      if(v){ u.voice = v; u.lang = v.lang; }
+      u.onend = function(){ idx++; say(); };
+      u.onerror = function(){ idx++; say(); };
+      status.textContent = "朗讀中：M" + c.n + "（" + (idx+1) + " / " + chunks.length + "）";
+      synth.speak(u);
+    }
+
+    function stop(){
+      speaking = false;
+      playBtn.classList.remove("playing");
+      playBtn.textContent = "朗讀全站教學";
+      synth.cancel();
+    }
+
+    playBtn.addEventListener("click", function(){
+      if(speaking){ stop(); status.textContent = "已停止。"; return; }
+      if(!chunks.length) buildChunks();
+      if(!chunks.length) return;
+      synth.cancel();
+      idx = 0; speaking = true;
+      playBtn.classList.add("playing");
+      playBtn.textContent = "暫停朗讀";
+      say();
+    });
+    stopBtn.addEventListener("click", function(){ stop(); status.textContent = "已停止。"; });
+    rateSel.addEventListener("change", function(){
+      if(speaking){ stop(); status.textContent = "語速已改，再按「朗讀全站教學」由頭開始。"; }
+    });
+  })();
 })();
 </script>
 </body>
