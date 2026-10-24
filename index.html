@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global MOOC on the Ethics of AI — 學習台</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --card:#ffffff; --ink:#1b1b1a; --ink2:#5a5a56;
+    --line:#e3e3de; --accent:#1f6f5c; --accent-soft:#e6f2ee;
+    --done:#1f6f5c; --warn:#8a5a12; --warn-bg:#fdf4e3;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang HK","Noto Sans HK",sans-serif;
+  }
+  a{color:var(--accent)}
+  header.top{
+    position:sticky; top:0; z-index:50; background:rgba(247,247,245,.94);
+    backdrop-filter:saturate(180%) blur(10px); border-bottom:1px solid var(--line);
+  }
+  .wrap{max-width:940px; margin:0 auto; padding:0 20px}
+  .topbar{display:flex; align-items:center; gap:14px; padding:10px 0}
+  .brand{font-weight:700; font-size:14px; letter-spacing:.02em; white-space:nowrap}
+  .brand span{color:var(--ink2); font-weight:500}
+  .grow{flex:1}
+  .pbar{width:150px; height:6px; background:var(--line); border-radius:99px; overflow:hidden}
+  .pbar i{display:block; height:100%; width:0; background:var(--accent); transition:width .25s}
+  .pnum{font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
+  nav.chips{display:flex; gap:8px; overflow-x:auto; padding:0 0 10px; scrollbar-width:none}
+  nav.chips::-webkit-scrollbar{display:none}
+  nav.chips a{
+    flex:0 0 auto; font-size:13px; text-decoration:none; color:var(--ink2);
+    border:1px solid var(--line); background:var(--card); border-radius:99px;
+    padding:4px 11px; white-space:nowrap;
+  }
+  nav.chips a.done{border-color:var(--accent); color:var(--accent); background:var(--accent-soft); font-weight:600}
+  nav.chips a:hover{border-color:var(--accent)}
+
+  main{padding:26px 0 70px}
+  h1{font-size:26px; line-height:1.3; margin:0 0 6px}
+  .sub{color:var(--ink2); font-size:14px; margin:0 0 18px}
+  .meta{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:0 0 18px}
+  .meta dl{display:grid; grid-template-columns:150px 1fr; gap:6px 12px; margin:0; font-size:14px}
+  .meta dt{color:var(--ink2)}
+  .meta dd{margin:0}
+  .note{
+    border:1px solid #f0dcb4; background:var(--warn-bg); color:#5c3d0c;
+    border-radius:12px; padding:14px 16px; font-size:14px; margin:0 0 22px
+  }
+  .note b{color:var(--warn)}
+
+  section.mod{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; margin:0 0 16px; scroll-margin-top:110px;
+  }
+  section.mod.is-done{border-color:#bfded4; box-shadow:inset 4px 0 0 var(--done)}
+  .modhead{display:flex; align-items:flex-start; gap:12px}
+  .num{
+    flex:0 0 auto; width:34px; height:34px; border-radius:9px; background:var(--accent-soft);
+    color:var(--accent); font-weight:700; font-size:15px; display:grid; place-items:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .modhead h2{font-size:19px; margin:0 0 2px; line-height:1.35}
+  .modhead .zh{font-size:13px; color:var(--ink2)}
+  .modhead .time{font-size:13px; color:var(--ink2); margin-left:auto; white-space:nowrap; padding-top:4px}
+  .donebox{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--ink2); cursor:pointer; user-select:none; white-space:nowrap; padding-top:6px}
+  .donebox input{width:17px; height:17px; accent-color:var(--accent); cursor:pointer}
+
+  h3.sec{font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink2); margin:20px 0 8px}
+  ul.vids{list-style:none; margin:0; padding:0; font-size:14.5px}
+  ul.vids li{display:flex; gap:10px; padding:3px 0; border-bottom:1px dashed #efefea}
+  ul.vids li:last-child{border-bottom:0}
+  ul.vids li .m{margin-left:auto; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
+  ul.vids li .tag{font-size:11px; color:var(--warn); background:var(--warn-bg); border-radius:5px; padding:1px 6px; height:fit-content}
+
+  ol.points{margin:0; padding-left:20px; font-size:14.5px}
+  ol.points li{margin:0 0 7px}
+
+  details.qa{border:1px solid var(--line); border-radius:10px; margin:0 0 8px; background:#fcfcfa}
+  details.qa summary{cursor:pointer; padding:9px 12px; font-size:14.5px; font-weight:600; list-style:none}
+  details.qa summary::-webkit-details-marker{display:none}
+  details.qa summary::before{content:"▸ "; color:var(--accent)}
+  details.qa[open] summary::before{content:"▾ "}
+  details.qa .a{padding:0 12px 11px; font-size:14px; color:#33332f}
+
+  dl.terms{margin:0; font-size:14px}
+  dl.terms div{padding:6px 0; border-bottom:1px dashed #efefea; display:grid; grid-template-columns:190px 1fr; gap:10px}
+  dl.terms div:last-child{border-bottom:0}
+  dl.terms dt{font-weight:600}
+  dl.terms dd{margin:0; color:#3d3d39}
+
+  footer{border-top:1px solid var(--line); padding:20px 0 60px; font-size:13px; color:var(--ink2)}
+  footer ul{margin:6px 0 0; padding-left:18px}
+  .btn{
+    font:inherit; font-size:13px; border:1px solid var(--line); background:var(--card);
+    color:var(--ink2); border-radius:8px; padding:5px 11px; cursor:pointer
+  }
+  .btn:hover{border-color:var(--accent); color:var(--accent)}
+  @media (max-width:640px){
+    .meta dl{grid-template-columns:1fr}
+    .meta dt{margin-top:8px}
+    .modhead{flex-wrap:wrap}
+    .modhead .time{margin-left:0}
+    dl.terms div{grid-template-columns:1fr}
+    .pbar{width:90px}
+    .brand span{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">Ethics of AI <span>· 學習台</span></div>
+      <div class="grow"></div>
+      <div class="pbar"><i id="pbar"></i></div>
+      <div class="pnum" id="pnum">0 / 10</div>
+      <button class="btn" id="reset">重設</button>
+    </div>
+    <nav class="chips" id="chips"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 id="top">Global MOOC on the Ethics of AI</h1>
+  <p class="sub">UNESCO × LG AI Research · Coursera · 10 個 module</p>
+
+  <div class="meta" id="meta"></div>
+
+  <div class="note">
+    <b>資料界線</b>：module 標題、影片標題與分鐘數、閱讀／作業、module 時長，全部逐字取自 Coursera 課程頁（2026-10-24 擷取）。
+    「學習重點」「自測」「詞彙」係自製學習輔助筆記，<b>唔係課程原文</b>，亦唔代表講師立場；個別案例背景用公開資料補充，並已標明「背景」。
+    睇片、交作業、考試一律返 Coursera 做，呢個站只用嚟編排進度同複習。
+  </div>
+
+  <div id="mods"></div>
+
+  <footer>
+    <div><b>資料來源</b></div>
+    <ul id="docs"></ul>
+    <p style="margin-top:14px">進度只存喺你部機嘅 localStorage，唔會上傳。换瀏覽器或清除網站資料就會重設。</p>
+  </footer>
+</main>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  var C = window.COURSE;
+  var KEY = C.id + ".progress";
+
+  function loadDone(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return new Set(arr);
+    }catch(e){ return new Set(); }
+  }
+  function saveDone(set){
+    try{ localStorage.setItem(KEY, JSON.stringify(Array.from(set).sort(function(a,b){return a-b;}))); }catch(e){}
+  }
+
+  var done = loadDone();
+
+  /* ---------- meta ---------- */
+  var metaRows = [
+    ["平台", C.platform + "（<a href='"+C.url+"' target='_blank' rel='noopener'>課程頁</a>）"],
+    ["提供者", C.provider],
+    ["程度", C.level],
+    ["評分", C.rating],
+    ["推出日期", C.launched],
+    ["時長", C.duration],
+    ["費用", C.cost],
+    ["評核", C.assessed],
+    ["語言", C.langNote]
+  ];
+  document.getElementById("meta").innerHTML =
+    "<dl>" + metaRows.map(function(r){ return "<dt>"+r[0]+"</dt><dd>"+r[1]+"</dd>"; }).join("") + "</dl>";
+
+  /* ---------- docs ---------- */
+  document.getElementById("docs").innerHTML = C.docs.map(function(d){
+    return "<li><a href='"+d.u+"' target='_blank' rel='noopener'>"+d.t+"</a></li>";
+  }).join("");
+
+  /* ---------- modules ---------- */
+  function modHTML(m){
+    var vids = m.videos.map(function(v){
+      return "<li><span>"+v.t+"</span><span class='m'>"+v.m+" 分鐘</span></li>";
+    }).join("");
+
+    var reads = (m.readings||[]).map(function(r){
+      return "<li><span>"+r.t+"</span><span class='m'>"+r.m+" 分鐘</span></li>";
+    }).join("");
+
+    var asg = m.assignment
+      ? "<h3 class='sec'>作業／測驗</h3><ul class='vids'><li><span class='tag'>計分</span><span>"+m.assignment.t+
+        "</span><span class='m'>"+m.assignment.m+" 分鐘</span></li></ul>"
+      : "";
+
+    var pts = (m.points||[]).map(function(p){ return "<li>"+p+"</li>"; }).join("");
+    var qa  = (m.quiz||[]).map(function(q){
+      return "<details class='qa'><summary>"+q.q+"</summary><div class='a'>"+q.a+"</div></details>";
+    }).join("");
+    var terms = (m.terms||[]).map(function(t){
+      return "<div><dt>"+t.k+"</dt><dd>"+t.v+"</dd></div>";
+    }).join("");
+
+    var vtotal = m.videos.reduce(function(s,v){ return s+v.m; },0);
+
+    return "<section class='mod' id='m"+m.n+"' data-n='"+m.n+"'>"+
+      "<div class='modhead'>"+
+        "<div class='num'>"+m.n+"</div>"+
+        "<div style='min-width:0'>"+
+          "<h2>"+m.title+"</h2>"+
+          "<div class='zh'>"+m.zh+"</div>"+
+        "</div>"+
+        "<div class='time'>"+m.time+"</div>"+
+        "<label class='donebox'><input type='checkbox' data-done='"+m.n+"' "+(done.has(m.n)?"checked":"")+"> 已完成</label>"+
+      "</div>"+
+      "<h3 class='sec'>影片（"+m.videos.length+" 段 · 各片相加 "+vtotal+" 分鐘）</h3><ul class='vids'>"+vids+"</ul>"+
+      (reads ? "<h3 class='sec'>閱讀</h3><ul class='vids'>"+reads+"</ul>" : "")+
+      asg+
+      (pts ? "<h3 class='sec'>學習重點（自製筆記）</h3><ol class='points'>"+pts+"</ol>" : "")+
+      (qa ? "<h3 class='sec'>自測（點開睇參考答案）</h3>"+qa : "")+
+      (terms ? "<h3 class='sec'>詞彙（自製）</h3><dl class='terms'>"+terms+"</dl>" : "")+
+    "</section>";
+  }
+
+  document.getElementById("mods").innerHTML = C.modules.map(modHTML).join("");
+
+  /* ---------- chips ---------- */
+  var chips = document.getElementById("chips");
+  function renderChips(){
+    chips.innerHTML = C.modules.map(function(m){
+      var on = done.has(m.n);
+      return "<a href='#m"+m.n+"' data-chip='"+m.n+"' class='"+(on?"done":"")+"'>M"+m.n+"</a>";
+    }).join("");
+  }
+  renderChips();
+
+  /* ---------- progress ---------- */
+  function renderProgress(){
+    var n = done.size, total = C.modules.length;
+    document.getElementById("pbar").style.width = (total? (n/total*100):0) + "%";
+    document.getElementById("pnum").textContent = n + " / " + total;
+    C.modules.forEach(function(m){
+      var sec = document.getElementById("m"+m.n);
+      var chip = chips.querySelector("[data-chip='"+m.n+"']");
+      var cb = sec.querySelector("input[data-done]");
+      if(done.has(m.n)){ sec.classList.add("is-done"); if(chip) chip.classList.add("done"); if(cb) cb.checked = true; }
+      else { sec.classList.remove("is-done"); if(chip) chip.classList.remove("done"); if(cb) cb.checked = false; }
+    });
+  }
+  renderProgress();
+
+  /* ---------- events ---------- */
+  document.addEventListener("change", function(e){
+    var t = e.target;
+    if(!t || !t.matches("input[data-done]")) return;
+    var n = parseInt(t.getAttribute("data-done"),10);
+    if(t.checked) done.add(n); else done.delete(n);
+    saveDone(done); renderProgress();
+  });
+
+  document.getElementById("reset").addEventListener("click", function(){
+    if(!confirm("清除全部 10 個 module 嘅完成標記？")) return;
+    done = new Set(); saveDone(done); renderProgress();
+  });
+})();
+</script>
+</body>
+</html>
